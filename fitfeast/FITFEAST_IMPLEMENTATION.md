@@ -216,7 +216,7 @@ import { config, MISTRAL_API_KEY, EDAMAM_APP_ID } from '@/app/lib/config';
 
 ## 🔧 Environment Variables Required
 
-Create a `.env.local` file with:
+Create a `.env` file with:
 
 ```env
 # Required

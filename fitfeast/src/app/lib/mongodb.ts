@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-const MONGODB_URI =
-  'mongodb+srv://Sanket:Sanket%40800@cluster0.dshnuwx.mongodb.net/fitfeast';
+dotenv.config();
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  throw new Error('❌ Please define the MONGODB_URI environment variable in .env');
 }
 
 interface MongooseConnection {
@@ -12,9 +14,8 @@ interface MongooseConnection {
   promise: Promise<typeof mongoose> | null;
 }
 
-// Use globalThis instead of global for better compatibility
 declare global {
-  // Avoid re-declaring if already exists
+  // Avoid re-declaring in hot reload environments
   // eslint-disable-next-line no-var
   var _mongoose: MongooseConnection | undefined;
 }
@@ -41,7 +42,7 @@ async function connectDB(): Promise<typeof mongoose> {
     };
 
     globalMongoose.promise = mongoose
-      .connect(MONGODB_URI, options)
+      .connect(uri!, options)
       .then((mongoose) => {
         console.log('✅ MongoDB connected:', mongoose.connection.name);
         return mongoose;
