@@ -1,87 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Define segment config
-export const dynamic = 'force-dynamic'; // Ensures the route is not statically optimized
-export const runtime = 'nodejs'; // 'edge' or 'nodejs' (default)
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+type Context = { params: Promise<{ id: string }> };
+
+/* ---------- GET ---------- */
+export async function GET(req: NextRequest, { params }: Context) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    
+    const { id } = await params;
+    const query = Object.fromEntries(req.nextUrl.searchParams);
+
     return NextResponse.json(
-      { 
-        message: 'Not implemented', 
-        id: params.id, 
-        query: Object.fromEntries(searchParams) 
-      },
-      { 
-        status: 501,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        }
-      }
+      { message: 'Not implemented', id, query },
+      { status: 501, headers: { 'Cache-Control': 'no-store' } }
     );
-  } catch (error) {
-    console.error('Error fetching grocery list:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' }, 
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+/* ---------- PUT ---------- */
+export async function PUT(req: NextRequest, { params }: Context) {
   try {
-    const body = await request.json();
+    const { id } = await params;
+    const body = await req.json();
+
     return NextResponse.json(
-      { message: 'Not implemented', id: params.id, body },
-      { 
-        status: 501,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      { message: 'Not implemented', id, body },
+      { status: 501 }
     );
-  } catch (error) {
-    console.error('Error updating grocery list:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' }, 
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+/* ---------- DELETE ---------- */
+export async function DELETE(_: NextRequest, { params }: Context) {
   try {
-    return NextResponse.json(
-      { message: 'Not implemented', id: params.id }, 
-      { 
-        status: 501,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
-  } catch (error) {
-    console.error('Error deleting grocery list:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' }, 
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    const { id } = await params;
+
+    return NextResponse.json({ message: 'Not implemented', id }, { status: 501 });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
