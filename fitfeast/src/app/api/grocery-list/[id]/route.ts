@@ -1,30 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { connectDB } from '@/app/lib/mongodb';
+import GroceryList from '@/app/models/GroceryList';
 
 // Define segment config
-export const dynamic = 'force-dynamic'; // Ensures the route is not statically optimized
-export const runtime = 'nodejs'; // 'edge' or 'nodejs' (default)
+export const dynamic = 'force-dynamic'; 
+export const runtime = 'nodejs'; 
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    await connectDB();
+    const groceryList = await GroceryList.findById(params.id);
     
-    return NextResponse.json(
-      { 
-        message: 'Not implemented', 
-        id: params.id, 
-        query: Object.fromEntries(searchParams) 
-      },
-      { 
-        status: 501,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        }
+    if (!groceryList) {
+      return NextResponse.json(
+        { error: 'Grocery list not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(groceryList, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
       }
-    );
+    });
   } catch (error) {
     console.error('Error fetching grocery list:', error);
     return NextResponse.json(
@@ -38,7 +40,7 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -63,7 +65,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {

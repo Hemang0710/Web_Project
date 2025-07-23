@@ -1,10 +1,10 @@
-"use client";
-import { signIn } from "next-auth/react";
+'use client';
+import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from "react";
-import FitFeastLayout from "../components/layout/FitFeastLayout";
+import { useState, Suspense } from 'react';
+import FitFeastLayout from '../components/layout/FitFeastLayout';
 
-export default function SignIn() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams?.get('from') || '/dashboard';
@@ -37,7 +37,6 @@ export default function SignIn() {
   };
 
   return (
-    <FitFeastLayout>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
@@ -109,6 +108,25 @@ export default function SignIn() {
           </div>
         </div>
       </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <FitFeastLayout>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <span className="text-white font-bold text-2xl">F</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-700 mb-2">Loading...</div>
+            <p className="text-gray-500">Preparing your sign-in experience</p>
+          </div>
+        </div>
+      }>
+        <SignInForm />
+      </Suspense>
     </FitFeastLayout>
   );
 }
