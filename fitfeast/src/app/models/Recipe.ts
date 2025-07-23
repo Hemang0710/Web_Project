@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Explicitly set the collection name to 'recipes'
 const recipeSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -131,7 +132,8 @@ const recipeSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'recipes' // Explicitly set the collection name
 });
 
 // Calculate total time before saving

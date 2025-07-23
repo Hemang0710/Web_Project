@@ -27,6 +27,10 @@ export async function GET(req: Request) {
     const source = url.searchParams.get('source') || 'all'; // 'database', 'external', 'all'
 
     await connectDB();
+    
+    console.log('Request parameters:', {
+      query, cuisine, dietType, maxCalories, maxCost, difficulty, maxPrepTime, ingredients, page, limit, source
+    });
 
     let recipes: any[] = [];
 
@@ -109,16 +113,18 @@ export async function GET(req: Request) {
       });
     }
 
-    const totalRecipes = recipes.length;
     const paginatedRecipes = recipes.slice(skip, skip + limit);
-
-    return NextResponse.json({
+    
+    const response = {
       recipes: paginatedRecipes,
-      total: totalRecipes,
+      total: recipes.length,
       currentPage: page,
-      totalPages: Math.ceil(totalRecipes / limit),
+      totalPages: Math.ceil(recipes.length / limit),
       source: source
-    });
+    };
+    
+    console.log('Returning response with', recipes.length, 'recipes');
+    return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     console.error('Error searching recipes:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -215,7 +221,7 @@ async function searchDatabaseRecipes(params: {
   } = params;
 
   // Build MongoDB query
-  const searchQuery: any = { isActive: true };
+  const searchQuery: any = {};
 
   // Text search
   if (query) {
@@ -261,10 +267,14 @@ async function searchDatabaseRecipes(params: {
     searchQuery['ingredients.estimatedCost'] = { $lte: maxCost };
   }
 
+  console.log('Searching database with query:', JSON.stringify(searchQuery, null, 2));
+  
   const recipes = await Recipe.find(searchQuery)
     .populate('createdBy', 'name')
     .sort(query ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
     .limit(limit);
+    
+  console.log(`Found ${recipes.length} recipes in database`);
 
   return recipes.map((recipe: any) => ({
     ...recipe.toObject(),

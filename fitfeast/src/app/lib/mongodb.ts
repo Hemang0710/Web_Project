@@ -29,32 +29,72 @@ if (!globalThis._mongoose) {
   globalThis._mongoose = globalMongoose;
 }
 
-async function connectDB(): Promise<typeof mongoose> {
-  if (globalMongoose.conn) {
-    console.log('✅ Using cached MongoDB connection');
-    return globalMongoose.conn;
+export async function disconnectFromDatabase() {
+  try {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+      globalMongoose.conn = null;
+      globalMongoose.promise = null;
+      console.log('✅ Disconnected from MongoDB');
+    }
+  } catch (error) {
+    console.error('❌ Error disconnecting from MongoDB:', error);
+    throw error;
   }
+}
 
-  if (!globalMongoose.promise) {
-    console.log('🔌 Connecting to MongoDB...');
-    const options = {
-      bufferCommands: false,
-    };
+export async function connectDB(): Promise<typeof mongoose> {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Using existing MongoDB connection');
+      return mongoose;
+    }
 
-    globalMongoose.promise = mongoose
-      .connect(uri!, options)
-      .then((mongoose) => {
-        console.log('✅ MongoDB connected:', mongoose.connection.name);
-        return mongoose;
-      })
-      .catch((err) => {
-        console.error('❌ MongoDB connection error:', err);
-        throw err;
+    if (!globalMongoose.promise) {
+      console.log('🔌 Connecting to MongoDB...');
+      const options: mongoose.ConnectOptions = {
+        dbName: 'fitfeast',
+        bufferCommands: false,
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 10000, // Increased from 5000
+        socketTimeoutMS: 45000,
+        connectTimeoutMS: 10000,
+        retryWrites: true,
+        retryReads: true,
+        w: 'majority'
+      };
+      
+      console.log('Connecting to MongoDB with options:', {
+        dbName: 'fitfeast',
+        serverSelectionTimeoutMS: options.serverSelectionTimeoutMS,
+        socketTimeoutMS: options.socketTimeoutMS,
+        connectTimeoutMS: options.connectTimeoutMS
       });
-  }
 
-  globalMongoose.conn = await globalMongoose.promise;
-  return globalMongoose.conn;
+      // Close any existing connections first
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+
+      globalMongoose.promise = mongoose
+        .connect(uri!, options)
+        .then((mongoose) => {
+          console.log('✅ MongoDB connected:', mongoose.connection.name);
+          globalMongoose.conn = mongoose;
+          return mongoose;
+        })
+        .catch((error) => {
+          console.error('❌ MongoDB connection error:', error);
+          globalMongoose.promise = null;
+          throw error;
+        });
+    }
+
+    return await globalMongoose.promise;
+  } catch (error) {
+    console.error('❌ Failed to connect to MongoDB:', error);
+    throw error;
+  }
 }
 
 export default connectDB;

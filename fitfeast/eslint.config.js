@@ -1,21 +1,15 @@
-// eslint.config.js
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import nextPlugin from '@next/eslint-plugin-next';
+import next from 'eslint-config-next';
 
-export default tseslint.config(
+export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  next,
   {
-    files: ['**/*.{ts,tsx}'],
-    plugins: { '@next/next': nextPlugin },
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      ...nextPlugin.configs['core-web-vitals'].rules,
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-unused-expressions': 'off',
+      // Add your custom rules here if needed
     },
-  }
-);
+  },
+];
