@@ -113,6 +113,7 @@ export default function MealPlansManager() {
       const res = await fetch(`/api/savedmealplans/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ isCompleted: true })
       });
       if (!res.ok) throw new Error('Failed to mark meal plan as completed');
