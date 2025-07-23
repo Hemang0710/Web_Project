@@ -5,9 +5,12 @@ import SavedMealPlan from '@/app/models/SavedMealPlan';
 import ProgressLog from '@/app/models/ProgressLog';
 import User from '@/app/models/User';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
-  const token = await getToken({ req });
+  const token = await getToken({ req: request });
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = token.id || token.sub;
   const plan = await SavedMealPlan.findOne({ _id: params.id, userId });
@@ -15,21 +18,27 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(plan);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
-  const token = await getToken({ req });
+  const token = await getToken({ req: request });
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = token.id || token.sub;
   await SavedMealPlan.findOneAndDelete({ _id: params.id, userId });
   return NextResponse.json({ success: true });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
-  const token = await getToken({ req });
+  const token = await getToken({ req: request });
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = token.id || token.sub;
-  const body = await req.json();
+  const body = await request.json();
 
   // If marking as completed, sync nutrition to ProgressLog
   if (body.isCompleted) {

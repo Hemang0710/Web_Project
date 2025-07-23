@@ -4,7 +4,8 @@ import HealthRecord from '@/app/models/HealthRecord';
 import SavedMealPlan from '@/app/models/SavedMealPlan';
 import User from '@/app/models/User';
 import { getToken } from 'next-auth/jwt';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // Type for a meal in a saved meal plan
 interface SavedMeal {
@@ -19,15 +20,15 @@ interface SavedMeal {
   calories?: number;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const token = await getToken({ req });
+    const token = await getToken({ req: request });
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = token.id || token.sub;
-    const body = await req.json();
+    const body = await request.json();
     const { title, description, selectedMeals, groceryList, totalCost, totalCalories, source = 'local' } = body;
     if (!selectedMeals || !Array.isArray(selectedMeals) || selectedMeals.length === 0) {
       return NextResponse.json({ error: 'No meals selected' }, { status: 400 });
@@ -99,10 +100,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const token = await getToken({ req });
+    const token = await getToken({ req: request });
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
