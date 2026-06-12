@@ -20,18 +20,38 @@ interface SavedMeal {
   calories?: number;
 }
 
+// Add CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }), 
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
     const userId = token.id || token.sub;
     const body = await request.json();
     const { title, description, selectedMeals, groceryList, totalCost, totalCalories, source = 'local' } = body;
     if (!selectedMeals || !Array.isArray(selectedMeals) || selectedMeals.length === 0) {
-      return NextResponse.json({ error: 'No meals selected' }, { status: 400 });
+      return new NextResponse(
+        JSON.stringify({ error: 'No meals selected' }), 
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
     // Save meal plan
     const savedPlan = await SavedMealPlan.create({
@@ -105,13 +125,23 @@ export async function GET(request: NextRequest) {
     await connectDB();
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }), 
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
     const userId = token.id || token.sub;
     const plans = await SavedMealPlan.find({ userId }).sort({ createdAt: -1 });
-    return NextResponse.json({ mealPlans: plans });
+    return new NextResponse(
+      JSON.stringify({ mealPlans: plans }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+    );
   } catch (error) {
     const err = error as Error;
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Error fetching meal plans:', err);
+    return new NextResponse(
+      JSON.stringify({ error: err.message || 'Failed to fetch meal plans' }), 
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+    );
   }
 } 

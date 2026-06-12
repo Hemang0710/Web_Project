@@ -31,12 +31,20 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       setLoadingStats(true);
-      const res = await fetch('/api/progress/enhanced?stats=true');
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data.stats);
+      try {
+        const res = await fetch('/api/progress/enhanced');
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
+        } else {
+          const error = await res.json();
+          console.error('Error fetching stats:', error);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoadingStats(false);
       }
-      setLoadingStats(false);
     };
     fetchStats();
   }, []);
